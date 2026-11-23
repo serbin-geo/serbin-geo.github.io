@@ -245,6 +245,14 @@ details.blk>summary{cursor:pointer;font-family:var(--f-display);font-size:25px;l
 .cphone{font-size:36px;line-height:1.1}
 .ctg{font-size:16px;color:var(--ink2)}
 .cbox .row{margin-top:14px}
+.imp{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.imp .fine{flex:1 1 100%}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.vh:focus-visible+label{outline:2.5px solid var(--blue);outline-offset:2px}
+input[type=text]{font:400 16px var(--f-body);color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-s);padding:0 12px;width:100%;min-width:0;height:48px;transition:border-color .15s}
+input[type=text]:hover,input[type=text]:focus{border-color:var(--ink2)}
+.crow .f-full{grid-column:1/-1}
+.tagnew{display:inline-block;font-size:12px;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:1px 7px;margin-left:8px}
 .fab{position:fixed;right:16px;bottom:16px;z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .bar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:6;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--sheet);border-top:1px solid var(--rule);box-shadow:0 -6px 20px rgba(22,34,44,.12)}
 .bar .lbl{display:block;line-height:1.2}
@@ -365,8 +373,14 @@ details.blk>summary{cursor:pointer;font-family:var(--f-display);font-size:25px;l
     <form id="form" autocomplete="off">
       <div class="blk">
         <h3>Исполнительные схемы<span id="exNote">Пример. Замените на свои работы.</span></h3>
+        <div class="imp">
+          <button type="button" class="btn small ghost" id="tplBtn">Скачать шаблон реестра</button>
+          <input type="file" id="reFile" class="vh" accept=".xlsx,.xls,.csv">
+          <label class="btn small ghost" for="reFile">Загрузить реестр</label>
+          <p class="fine" id="reMsg" role="status">Много схем? Скачайте шаблон, заполните его в Excel и загрузите: калькулятор заполнится сам.</p>
+        </div>
         <div id="rows" style="display:flex;flex-direction:column;gap:12px"></div>
-        <div><button type="button" class="btn small" id="addRow">+ Добавить вид работ</button></div>
+        <div class="row"><button type="button" class="btn small" id="addRow">+ Добавить вид работ</button><button type="button" class="btn small ghost" id="addOwn">+ Работа не из списка</button></div>
         <p class="fine">Повторные листы: та же конструкция на другом пикете, оси или захватке. Первый лист серии идёт по полной цене, остальные за 80%.</p>
         <div class="fld">
           <span class="lbl">В каком виде проект</span>
@@ -534,6 +548,85 @@ function calc(s){
 }
 /*CALC-END*/
 
+/*REESTR-START*/
+function norm(t){return String(t==null?'':t).toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9]+/g,' ').trim()}
+function parseReestr(aoa,names){
+  const idx=Object.create(null);names.forEach((n,i)=>{idx[norm(n)]=i});
+  const num=v=>{const n=parseFloat(String(v==null?'':v).replace(/\s/g,'').replace(',','.'));return isFinite(n)&&n>0?Math.min(Math.floor(n),9999):0};
+  const isNum=v=>/^\s*\d+([.,]\d+)?\s*$/.test(String(v==null?'':v));
+  let h=-1,cW=-1,cN=-1,cR=-1,cT=-1;
+  for(let y=0;y<Math.min(aoa.length,40)&&h<0;y++){
+    const row=aoa[y]||[];
+    for(let x=0;x<row.length;x++){if(norm(row[x]).startsWith('вид работ')){h=y;cW=x;break}}
+    if(h>=0)row.forEach((c,x)=>{const v=norm(c);if(x===cW)return;if(cN<0&&v.startsWith('лист'))cN=x;else if(cR<0&&v.includes('повторн'))cR=x;else if(cT<0&&v.startsWith('сложност'))cT=x});
+  }
+  const agg=new Map();let lines=0;
+  for(let y=h+1;y<aoa.length;y++){
+    const row=aoa[y]||[];let name,n,r,t='B';
+    if(h>=0){
+      name=row[cW];n=cN>=0?num(row[cN]):0;r=cR>=0?num(row[cR]):0;
+      const tv=cT>=0?norm(row[cT]):'';t=tv.startsWith('прост')?'A':tv.startsWith('сложн')?'C':'B';
+    }else{
+      const cells=row.map(c=>String(c==null?'':c).trim());const xi=cells.findIndex(c=>c&&!isNum(c));if(xi<0)continue;
+      name=cells[xi];const nums=cells.slice(xi+1).filter(isNum).map(num);n=nums[0]||0;r=nums[1]||0;
+      if(!n&&!(norm(name) in idx))continue;
+    }
+    const key=norm(name);if(!key)continue;if(!n)n=1;lines++;
+    const i=key in idx?idx[key]:-1;const k=i>=0?'#'+i:key+'|'+t;
+    const e=agg.get(k)||{i,name:String(name).trim().slice(0,120),t,n:0,r:0};e.n+=n;e.r+=r;agg.set(k,e);
+  }
+  const rows=[...agg.values()].map(e=>{e.r=Math.min(e.r,Math.max(e.n-1,0));if(e.i>=0){delete e.name;delete e.t}return e});
+  return {rows,lines,sheets:rows.reduce((a,e)=>a+e.n,0),own:rows.filter(e=>e.i<0).length};
+}
+function crc32(u8){let crc=-1;for(let i=0;i<u8.length;i++){let c=(crc^u8[i])&255;for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;crc=(crc>>>8)^c}return(crc^-1)>>>0}
+function zipStore(files){
+  const parts=[],cd=[];let off=0;
+  const u16=n=>[n&255,n>>>8&255],u32=n=>[n&255,n>>>8&255,n>>>16&255,n>>>24&255];
+  for(const f of files){
+    const nm=new TextEncoder().encode(f.name),crc=crc32(f.data),sz=f.data.length;
+    const lh=Uint8Array.from([0x50,0x4b,3,4,...u16(20),...u16(0),...u16(0),...u16(0),...u16(0x21),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0)]);
+    parts.push(lh,nm,f.data);
+    cd.push(Uint8Array.from([0x50,0x4b,1,2,...u16(20),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0x21),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=lh.length+nm.length+sz;
+  }
+  const cdSize=cd.reduce((a,b)=>a+b.length,0);
+  parts.push(...cd,Uint8Array.from([0x50,0x4b,5,6,...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdSize),...u32(off),...u16(0)]));
+  const out=new Uint8Array(parts.reduce((a,b)=>a+b.length,0));let p=0;for(const b of parts){out.set(b,p);p+=b.length}
+  return out;
+}
+function buildXlsx(catalog,tiers,author,host){
+  const x=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const col=i=>String.fromCharCode(65+i);
+  const cell=(c,r,v,s)=>v===''?`<c r="${col(c)}${r}" s="${s}"/>`:typeof v==='number'?`<c r="${col(c)}${r}" s="${s}"><v>${v}</v></c>`:`<c r="${col(c)}${r}" t="inlineStr" s="${s}"><is><t>${x(v)}</t></is></c>`;
+  const NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',HEAD='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  const items=[];catalog.forEach(c=>c.items.forEach(it=>items.push([it[0],c.cat,tiers[it[1]]])));
+  const ROWS=200,F=7,L=F+ROWS-1;
+  const hints=['1. В столбце «Вид работ» выберите работу из списка. Если нужной работы нет, впишите своё название и укажите сложность.',
+    '2. Повторные листы: та же конструкция на другом пикете, оси или захватке. Первый лист серии идёт по полной цене, остальные за 80%.',
+    '3. Сохраните файл и загрузите его в калькулятор на сайте'+(host?' '+host:'')+'. Цены на все работы есть на листе «Справочник».'];
+  let d=`<row r="1" ht="24" customHeight="1">${cell(0,1,'Реестр исполнительных схем',1)}</row>`;
+  hints.forEach((t,i)=>{d+=`<row r="${i+2}" ht="32" customHeight="1">${cell(0,i+2,t,4)}</row>`});
+  d+=`<row r="6" ht="34" customHeight="1">${['№','Объект, пикет, ось','Вид работ','Листов','Из них повторных','Сложность, если работы нет в списке','Примечание'].map((t,i)=>cell(i,6,t,2)).join('')}</row>`;
+  for(let r=F;r<=L;r++){d+=`<row r="${r}">${cell(0,r,r-F+1,3)}${[1,2,3,4,5,6].map(c=>cell(c,r,'',3)).join('')}</row>`}
+  const sheet1=HEAD+`<worksheet ${NS}><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView tabSelected="1" workbookViewId="0"><pane ySplit="6" topLeftCell="A7" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols><col min="1" max="1" width="5" customWidth="1"/><col min="2" max="2" width="28" customWidth="1"/><col min="3" max="3" width="40" customWidth="1"/><col min="4" max="4" width="9" customWidth="1"/><col min="5" max="5" width="13" customWidth="1"/><col min="6" max="6" width="22" customWidth="1"/><col min="7" max="7" width="30" customWidth="1"/></cols><sheetData>${d}</sheetData><mergeCells count="4"><mergeCell ref="A1:G1"/><mergeCell ref="A2:G2"/><mergeCell ref="A3:G3"/><mergeCell ref="A4:G4"/></mergeCells><dataValidations count="3"><dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="0" promptTitle="Вид работ" prompt="Выберите из списка или впишите своё название" sqref="C${F}:C${L}"><formula1>Справочник!$A$2:$A$${items.length+1}</formula1></dataValidation><dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="F${F}:F${L}"><formula1>"простая,средняя,сложная"</formula1></dataValidation><dataValidation type="whole" operator="greaterThanOrEqual" allowBlank="1" showErrorMessage="1" errorTitle="Количество" error="Введите целое число" sqref="D${F}:E${L}"><formula1>0</formula1></dataValidation></dataValidations><pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  let d2=`<row r="1" ht="30" customHeight="1">${['Вид работ','Раздел','Цена за лист, тг'].map((t,i)=>cell(i,1,t,2)).join('')}</row>`;
+  items.forEach((it,i)=>{d2+=`<row r="${i+2}">${cell(0,i+2,it[0],3)}${cell(1,i+2,it[1],3)}${cell(2,i+2,it[2],3)}</row>`});
+  const sheet2=HEAD+`<worksheet ${NS}><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols><col min="1" max="1" width="42" customWidth="1"/><col min="2" max="2" width="32" customWidth="1"/><col min="3" max="3" width="16" customWidth="1"/></cols><sheetData>${d2}</sheetData><pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/></worksheet>`;
+  const side='<color rgb="FF9AA5A8"/>';
+  const styles=HEAD+`<styleSheet ${NS}><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE9EEEA"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin">${side}</left><right style="thin">${side}</right><top style="thin">${side}</top><bottom style="thin">${side}</bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const R='http://schemas.openxmlformats.org/officeDocument/2006/relationships',PK='http://schemas.openxmlformats.org/package/2006/';
+  const files={
+    '[Content_Types].xml':HEAD+`<Types xmlns="${PK}content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`,
+    '_rels/.rels':HEAD+`<Relationships xmlns="${PK}relationships"><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="${PK}relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>`,
+    'docProps/core.xml':HEAD+`<cp:coreProperties xmlns:cp="${PK}metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Реестр исполнительных схем</dc:title><dc:creator>${x(author||'')}</dc:creator></cp:coreProperties>`,
+    'xl/workbook.xml':HEAD+`<workbook ${NS} xmlns:r="${R}"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="12000"/></bookViews><sheets><sheet name="Реестр" sheetId="1" r:id="rId1"/><sheet name="Справочник" sheetId="2" r:id="rId2"/></sheets></workbook>`,
+    'xl/_rels/workbook.xml.rels':HEAD+`<Relationships xmlns="${PK}relationships"><Relationship Id="rId1" Type="${R}/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${R}/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="${R}/styles" Target="styles.xml"/></Relationships>`,
+    'xl/styles.xml':styles,'xl/worksheets/sheet1.xml':sheet1,'xl/worksheets/sheet2.xml':sheet2
+  };
+  return zipStore(Object.keys(files).map(n=>({name:n,data:new TextEncoder().encode(files[n])})));
+}
+/*REESTR-END*/
+
 const CATALOG=[
  {cat:'Земляные работы',items:[['Разработка котлована','A'],['Разработка траншей','A'],['Обратная засыпка','A'],['Планировка территории','A'],['Срезка растительного слоя','A'],['Выемки','B'],['Отсыпка насыпи','B'],['Земполотно железных дорог','B'],['Земполотно автодорог','B'],['Дамбы и валы','B'],['Каналы и арыки','C']]},
  {cat:'Мосты и ИССО',items:[['Котлованы под опоры','A'],['Фундаменты опор','B'],['Сваи и стойки','B'],['Отсыпка конусов','B'],['Укрепление откосов','B'],['Бетонирование русла','B'],['Подпорные стенки','B'],['Лестничные сходы','B'],['Водопропускные трубы','B'],['Ригели и насадки','C'],['Пролётные строения','C'],['Путепроводы','C']]},
@@ -593,7 +686,11 @@ function renderStatic(){
 }
 
 const DEF_ITEM=ITEMS.findIndex(i=>i.name==='Отсыпка конусов');
-let state={rows:[{i:DEF_ITEM,n:4,r:3}],format:'pdf',dev:false,kit:false,regular:false,urgency:1,vol:{},other:{},touched:false};
+let state={rows:[{i:DEF_ITEM,n:4,r:3}],format:'pdf',dev:false,kit:false,regular:false,urgency:1,vol:{},other:{},touched:false,reestr:''};
+const TIERN={A:'простая',B:'средняя',C:'сложная'};
+const rowPrice=r=>r.i>=0&&ITEMS[r.i]?P.tiers[ITEMS[r.i].tier]:P.tiers[r.t]||P.tiers.B;
+const rowName=r=>r.i>=0&&ITEMS[r.i]?ITEMS[r.i].name:((r.name||'').trim()||'Работа не из перечня')+' [нет в перечне, '+(TIERN[r.t]||TIERN.B)+']';
+const plural=(n,f)=>{const a=n%10,b=n%100;return f[b>10&&b<20?2:a===1?0:a>=2&&a<=4?1:2]};
 let rowSeq=0;
 
 function optionsHtml(sel){
@@ -601,9 +698,13 @@ function optionsHtml(sel){
 }
 function renderRows(){
   $('rows').innerHTML=state.rows.map((r,k)=>{
-    const id=++rowSeq;
+    const id=++rowSeq,own=!(r.i>=0&&ITEMS[r.i]);
+    const head=own
+      ?`<div class="fld f-full"><label for="rw-${id}">Название работы<span class="tagnew">нет в перечне</span></label><input type="text" id="rw-${id}" data-f="name" maxlength="120" placeholder="Например: устройство шпунта" value="${esc(r.name||'')}"></div>
+      <div class="fld f-full"><label for="rt-${id}">Сложность</label><select id="rt-${id}" data-f="t">${['A','B','C'].map(t=>`<option value="${t}"${(r.t||'B')===t?' selected':''}>${TIERN[t]} · ${fmt(P.tiers[t])}</option>`).join('')}</select></div>`
+      :`<div class="fld f-sel"><label for="rw-${id}">Вид работ</label><select id="rw-${id}" data-f="i">${optionsHtml(r.i)}</select></div>`;
     return `<div class="crow" data-k="${k}">
-      <div class="fld f-sel"><label for="rw-${id}">Вид работ</label><select id="rw-${id}" data-f="i">${optionsHtml(r.i)}</select></div>
+      ${head}
       <div class="fld"><label for="rn-${id}">Листов</label>${stp(`id="rn-${id}" data-f="n" step="1" value="${r.n}"`)}</div>
       <div class="fld"><label for="rr-${id}">Из них повторных</label>${stp(`id="rr-${id}" data-f="r" step="1" value="${r.r}"`)}</div>
       <button type="button" class="del" data-del="${k}" aria-label="Убрать строку" ${state.rows.length<2?'hidden':''}>×</button>
@@ -611,15 +712,16 @@ function renderRows(){
   }).join('');
 }
 function calcInput(){
-  return {rows:state.rows.map(r=>({p:P.tiers[ITEMS[r.i].tier],n:r.n,r:r.r})),format:state.format,dev:state.dev,kit:state.kit,regular:state.regular,urgency:state.urgency,vol:state.vol,other:state.other};
+  return {rows:state.rows.map(r=>({p:rowPrice(r),n:r.n,r:r.r})),format:state.format,dev:state.dev,kit:state.kit,regular:state.regular,urgency:state.urgency,vol:state.vol,other:state.other};
 }
 function buildMessage(c){
   const L=['Здравствуйте! Нужен расчёт.'];
   const rows=state.rows.filter(r=>r.n>0);
-  if(rows.length){L.push('Исполнительные схемы:');rows.forEach(r=>L.push('- '+ITEMS[r.i].name+': '+r.n+' л.'+(r.r>0&&r.n>1?' (повторных '+Math.min(r.r,r.n-1)+')':'')));
+  if(rows.length){L.push('Исполнительные схемы:');rows.forEach(r=>L.push('- '+rowName(r)+': '+r.n+' л.'+(r.r>0&&r.n>1?' (повторных '+Math.min(r.r,r.n-1)+')':'')));
     L.push('Проект: '+({pdf:'PDF',dwg:'DWG/DXF',scan:'скан или фото'})[state.format]);
     if(state.dev)L.push('Нужно нанести фактические отклонения');
-    if(state.kit)L.push('Нужен комплект ИД под сдачу');}
+    if(state.kit)L.push('Нужен комплект ИД под сдачу');
+    if(state.reestr)L.push('Реестр пришлю файлом: '+state.reestr);}
   const v=VOL.filter(x=>+state.vol[x[0]]>0);
   if(v.length){L.push('Подсчёт объёмов:');v.forEach(x=>L.push('- '+x[1]+': '+state.vol[x[0]]+' '+x[2]))}
   const o=OTHER.filter(x=>+state.other[x[0]]>0);
@@ -660,6 +762,18 @@ function recalc(){
   if(CONFIG.telegram)$('sendTg').href='https://t.me/'+CONFIG.telegram.replace(/^@/,'')+'?text='+encodeURIComponent(msg);
   $('copyBox').value=msg;
 }
+async function loadReestr(file){
+  const msg=$('reMsg');msg.textContent='Читаю файл…';
+  try{
+    if(!window.XLSX)await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('lib'));document.head.appendChild(sc)});
+    const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+    const sn=wb.SheetNames.find(n=>norm(n).includes('реестр'))||wb.SheetNames[0];
+    const res=parseReestr(XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',blankrows:false}),ITEMS.map(i=>i.name));
+    if(!res.rows.length){msg.textContent='В файле не нашлось ни одной работы. Нужен столбец «Вид работ» и количество листов, как в шаблоне.';return}
+    state.rows=res.rows;state.touched=true;state.reestr=file.name;renderRows();recalc();
+    msg.textContent='Загружен «'+file.name+'»: '+res.lines+' '+plural(res.lines,['строка','строки','строк'])+', '+res.sheets+' '+plural(res.sheets,['лист','листа','листов'])+'.'+(res.own?' Работ не из перечня: '+res.own+'. Они добавлены с пометкой, цену по ним уточню.':'');
+  }catch(err){msg.textContent=err&&err.message==='lib'?'Не удалось загрузить модуль чтения Excel. Проверьте интернет и попробуйте ещё раз.':'Не получилось прочитать файл. Сохраните его как .xlsx и загрузите снова.'}
+}
 function waLink(text){return 'https://wa.me/'+CONFIG.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(text)}
 
 function wire(){
@@ -679,7 +793,7 @@ function wire(){
   $('rows').addEventListener('input',e=>{
     const row=e.target.closest('.crow');if(!row)return;
     const r=state.rows[+row.dataset.k],f=e.target.dataset.f;
-    if(f==='i')r.i=+e.target.value;else r[f]=Math.max(0,Math.floor(+e.target.value||0));
+    if(f==='i')r.i=+e.target.value;else if(f==='name')r.name=e.target.value;else if(f==='t')r.t=e.target.value;else r[f]=Math.max(0,Math.floor(+e.target.value||0));
     state.touched=true;recalc();
   });
   $('rows').addEventListener('change',e=>{
@@ -692,6 +806,14 @@ function wire(){
     state.rows.splice(+d.dataset.del,1);state.touched=true;renderRows();recalc();
   });
   $('addRow').addEventListener('click',()=>{state.rows.push({i:0,n:1,r:0});state.touched=true;renderRows();recalc()});
+  $('addOwn').addEventListener('click',()=>{state.rows.push({i:-1,name:'',t:'B',n:1,r:0});state.touched=true;renderRows();recalc();const el=$('rows').lastElementChild.querySelector('input[type=text]');if(el)el.focus()});
+  $('reFile').addEventListener('change',e=>{const f=e.target.files[0];if(f)loadReestr(f);e.target.value=''});
+  $('tplBtn').addEventListener('click',()=>{
+    const u8=buildXlsx(CATALOG,P.tiers,CONFIG.name,location.host);
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    a.download='Реестр ИС (шаблон).xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  });
+  if(window.self!==window.top){$('tplBtn').hidden=true;$('reMsg').textContent='Есть реестр в Excel? Загрузите его: калькулятор заполнится сам.'}
   $('form').addEventListener('submit',e=>e.preventDefault());
   $('form').addEventListener('input',e=>{
     const t=e.target;
