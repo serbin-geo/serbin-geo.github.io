@@ -1,0 +1,4 @@
+gost.woff2
+  Based on osifont (https://github.com/hikikomori82/osifont), an open ISO 3098 lettering font.
+  Licence: GNU LGPL version 3 with font exception.
+  Changes: reduced to Latin and Cyrillic characters, minus sign mapped to the en dash glyph, stray guide contour removed from the letters yo, saved as WOFF2.

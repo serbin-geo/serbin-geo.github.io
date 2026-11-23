@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Исполнительные схемы и подсчёт объёмов. Сербин Дмитрий</title>
+<meta name="description" content="Камеральная обработка удалённо: исполнительные схемы по мостам, земляным работам, зданиям, дорогам и сетям, подсчёт объёмов. Цены и калькулятор стоимости.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://serbin-geo.github.io/">
+<meta property="og:image" content="https://serbin-geo.github.io/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://serbin-geo.github.io/">
+<meta property="og:title" content="Исполнительные схемы и подсчёт объёмов">
+<meta property="og:description" content="Камеральная обработка удалённо. Цены от 6 000 ₸ за лист, калькулятор стоимости, расчёт в WhatsApp.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316222C'/%3E%3Cpath d='M5 23L13 12h6l8 11' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linejoin='round'/%3E%3Cpath d='M16 5v6' stroke='%23E8590C' stroke-width='2.4'/%3E%3Cpath d='M16 13l-3.2-4.5h6.4z' fill='%23E8590C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'GOST';src:url('gost.woff2') format('woff2');font-display:swap}
+:root{
+  /* Идея: лист чертежа. Заголовки и цифры чертёжным шрифтом, рамка и основная надпись как на листе.
+     Всё, что нажимается, мягкое: скругления, крупные кнопки, отклик на нажатие. */
+  --paper:#E6EAE6;
+  --sheet:#FCFCFA;
+  --tint:#F0F3EF;
+  --ink:#16222C;
+  --ink2:#566571;
+  --rule:#D5DCD8;
+  --accent:#E8590C;
+  --accent-soft:#FCE8D8;
+  --on-accent:#16222C;
+  --blue:#1D5FC2;
+  --ok:#128A4A;
+  --on-ok:#FFFFFF;
+  --knob:#FFFFFF;
+  --shadow:0 1px 2px rgba(22,34,44,.05),0 8px 24px rgba(22,34,44,.06);
+  --press:0 2px 0 rgba(22,34,44,.22);
+  --f-display:'GOST','Golos Text','Segoe UI',Arial,sans-serif;
+  --f-body:'Golos Text','Segoe UI',Roboto,Arial,sans-serif;
+  --r:14px;
+  --r-s:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#11171D;--sheet:#1A222A;--tint:#222C36;--ink:#E8EDF0;--ink2:#9DABB6;--rule:#33404C;
+    --accent:#FF8A3D;--accent-soft:#3B2A1D;--on-accent:#16222C;--blue:#7DB1FF;--ok:#2FB36B;--on-ok:#08170F;--knob:#F4F6F7;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.22);--press:0 2px 0 rgba(0,0,0,.5);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11171D;--sheet:#1A222A;--tint:#222C36;--ink:#E8EDF0;--ink2:#9DABB6;--rule:#33404C;
+  --accent:#FF8A3D;--accent-soft:#3B2A1D;--on-accent:#16222C;--blue:#7DB1FF;--ok:#2FB36B;--on-ok:#08170F;--knob:#F4F6F7;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.22);--press:0 2px 0 rgba(0,0,0,.5);color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+a{color:var(--blue)}
+h1,h2,h3,caption,.brand,.stamp .big,.stamp .v,.steps b,details.blk>summary{word-spacing:-.14em}
+h1,h2,h3,caption{font-family:var(--f-display);font-weight:400;letter-spacing:.01em}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-size:clamp(40px,5.4vw,66px);line-height:1;-webkit-text-stroke:.6px currentColor}
+h2{font-size:clamp(32px,4.2vw,50px);line-height:1.02;-webkit-text-stroke:.4px currentColor}
+h3{font-size:25px;line-height:1.1;-webkit-text-stroke:.25px currentColor}
+p{margin:0}
+ol,ul{margin:0;padding:0}
+figure{margin:0}
+.num{font-family:var(--f-display);font-variant-numeric:tabular-nums;letter-spacing:.02em;word-spacing:-.1em}
+.muted{color:var(--ink2)}
+:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+
+.sheet{max-width:1200px;margin:10px auto;padding:5px 5px 5px 12px;border:1px solid var(--rule);background:var(--sheet)}
+.frame{border:1.5px solid var(--ink)}
+@media (min-width:900px){.sheet{margin:20px auto;padding:8px 8px 8px 26px}}
+.pad{padding:clamp(32px,5.5vw,64px) clamp(16px,4vw,48px)}
+section.pad{border-top:1px solid var(--rule)}
+.head{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;max-width:60ch}
+
+.draft{background:var(--accent-soft);color:var(--ink);font-size:14px;padding:9px clamp(16px,4vw,48px);border-bottom:1px solid var(--rule)}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;padding:14px clamp(16px,4vw,48px);border-bottom:1px solid var(--rule)}
+.brand{font-family:var(--f-display);font-size:26px;line-height:1;color:var(--ink);text-decoration:none;letter-spacing:.02em}
+.nav{display:flex;flex-wrap:wrap;gap:4px;font-size:15px;margin:0 -10px}
+.nav a{color:var(--ink);text-decoration:none;padding:8px 10px;border-radius:var(--r-s);transition:background .15s}
+.nav a:hover{background:var(--tint)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;font:600 16px/1.2 var(--f-body);padding:12px 22px;border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);text-decoration:none;cursor:pointer;border-radius:var(--r);box-shadow:var(--press);transition:transform .08s ease,box-shadow .08s ease,background .15s ease,filter .15s ease;-webkit-user-select:none;user-select:none}
+.btn:hover{background:var(--tint)}
+.btn:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,0)}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent);filter:brightness(1.07)}
+.btn.wa{background:var(--ok);color:var(--on-ok);border-color:var(--ok)}
+.btn.wa:hover{background:var(--ok);filter:brightness(1.08)}
+.btn.small{min-height:42px;padding:8px 16px;font-size:15px;border-radius:var(--r-s)}
+.btn.ghost{box-shadow:none;border-color:var(--rule)}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+
+.hero{display:grid;grid-template-columns:1fr;gap:32px;align-items:center}
+@media (min-width:900px){.hero{grid-template-columns:1.05fr 1fr;gap:48px}}
+.eyebrow{font-size:14px;color:var(--ink2);margin-bottom:16px}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{font-size:18px;margin:20px 0 26px;max-width:50ch;color:var(--ink2)}
+.hero>*{min-width:0}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:28px}
+.facts div{padding:12px 10px 12px 12px;background:var(--tint);border-radius:var(--r);font-size:13px;color:var(--ink2);line-height:1.35}
+.facts b{display:block;font-family:var(--f-display);font-weight:400;font-size:clamp(19px,5vw,30px);line-height:1.1;color:var(--ink);white-space:nowrap;letter-spacing:.02em;margin-bottom:2px}
+.drawing{border:1px solid var(--rule);border-radius:var(--r);background:var(--tint);overflow:hidden;box-shadow:var(--shadow)}
+.drawing svg{display:block;width:100%;height:auto}
+.drawing figcaption{font-size:13px;color:var(--ink2);padding:10px 14px;border-top:1px solid var(--rule);background:var(--sheet);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.lg{display:inline-flex;align-items:center;gap:6px}
+.lg i{display:inline-block;width:22px;height:0;border-top:1px solid var(--ink2)}
+.lg i.f{border-top:3px solid var(--ink)}
+.s-thin{stroke:var(--ink2);stroke-width:1;fill:none}
+.s-fact{stroke:var(--ink);stroke-width:3;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.s-axis{stroke:var(--blue);stroke-width:1;stroke-dasharray:14 4 2 4;fill:none}
+.s-dev{stroke:var(--accent);stroke-width:1.8;fill:none}
+.f-dev{fill:var(--accent)}
+.t-dev{fill:var(--accent);font:400 22px var(--f-display);stroke:var(--accent);stroke-width:.4}
+.t-dim{fill:var(--ink2);font:400 16px var(--f-display)}
+.t-ax{fill:var(--blue);font:400 16px var(--f-display)}
+.s-cross{stroke:var(--rule);stroke-width:1}
+@media (prefers-reduced-motion:no-preference){
+  .s-fact{stroke-dasharray:900;animation:draw 1.5s ease-out both}
+  .dv{animation:pop .4s ease-out both}
+  .dv:nth-of-type(1){animation-delay:1.1s}.dv:nth-of-type(2){animation-delay:1.25s}.dv:nth-of-type(3){animation-delay:1.4s}.dv:nth-of-type(4){animation-delay:1.55s}.dv:nth-of-type(5){animation-delay:1.7s}
+  @keyframes draw{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
+  @keyframes pop{from{opacity:0}to{opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--shadow)}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.cat{padding:20px;display:flex;flex-direction:column;gap:12px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--shadow)}
+.cat.more{background:var(--tint);box-shadow:none}
+.tl{display:grid;grid-template-columns:74px 1fr;gap:12px;font-size:15px;line-height:1.45;align-items:start}
+.tl .num{font-size:19px;line-height:1;padding:5px 0 4px;text-align:center;border-radius:8px;background:var(--tint);color:var(--ink)}
+.tl.t-C .num{background:var(--accent-soft);color:var(--accent)}
+.note{font-size:14px;color:var(--ink2);margin-top:14px}
+
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:34px}
+.tier{padding:20px;display:flex;flex-direction:column;gap:8px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--shadow)}
+.tier h3{font-size:22px;color:var(--ink2);-webkit-text-stroke:0}
+.tier .num{font-size:52px;line-height:.95;-webkit-text-stroke:.4px currentColor}
+.tier .num small{font:400 14px var(--f-body);color:var(--ink2);letter-spacing:0;word-spacing:normal;-webkit-text-stroke:0}
+.tier p{font-size:14px;color:var(--ink2)}
+.tier.c .num{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr;gap:30px}
+@media (min-width:900px){.grid2{grid-template-columns:1fr 1fr;gap:34px 44px}}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+caption{text-align:left;font-size:25px;line-height:1.1;padding-bottom:10px;-webkit-text-stroke:.25px currentColor}
+th,td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right;padding-right:0;white-space:nowrap;font-size:18px;line-height:1.3}
+#tblVol td.num,#tblProc td.num{white-space:normal;width:48%;text-wrap:balance}
+
+.calc{display:grid;grid-template-columns:1fr;gap:20px;align-items:start}
+@media (min-width:980px){.calc{grid-template-columns:1.35fr 1fr;gap:28px}.res{position:sticky;top:16px}}
+.blk{background:var(--sheet);border:1px solid var(--rule);border-radius:16px;box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:16px}
+.blk + .blk{margin-top:14px}
+.blk h3 span,details.blk>summary span{font:400 13px var(--f-body);color:var(--ink2);margin-left:10px;letter-spacing:0;word-spacing:normal;-webkit-text-stroke:0}
+.crow{display:grid;grid-template-columns:1fr 1fr 46px;gap:10px;align-items:end;padding:14px;background:var(--tint);border-radius:var(--r)}
+.crow .f-sel{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fld label,.lbl{font-size:13px;color:var(--ink2)}
+select{font:400 16px var(--f-body);color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-s);padding:0 12px;width:100%;min-width:0;height:48px;cursor:pointer;transition:border-color .15s}
+select:hover{border-color:var(--ink2)}
+.stp{display:grid;grid-template-columns:44px 1fr 44px;height:48px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r-s);overflow:hidden;transition:border-color .15s}
+.stp:hover,.stp:focus-within{border-color:var(--ink2)}
+.stp input{font:400 22px var(--f-display);letter-spacing:.02em;color:var(--ink);background:transparent;border:0;text-align:center;width:100%;min-width:0;padding:0;-moz-appearance:textfield;appearance:textfield}
+.stp input::-webkit-outer-spin-button,.stp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.stp input:focus{outline:none}
+.sb{border:0;background:transparent;color:var(--ink);font:400 24px/1 var(--f-body);cursor:pointer;transition:background .12s,transform .08s;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.sb:hover{background:var(--tint)}
+.sb:active{background:var(--accent-soft);transform:scale(.92)}
+.del{height:48px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink2);font-size:22px;line-height:1;cursor:pointer;border-radius:var(--r-s);transition:color .15s,border-color .15s,transform .08s}
+.del:hover{border-color:var(--ink2);color:var(--ink)}
+.del:active{transform:scale(.94)}
+.seg{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--tint);border-radius:var(--r)}
+.seg label{flex:1 1 auto;text-align:center;padding:11px 12px;font-size:15px;cursor:pointer;border-radius:var(--r-s);white-space:nowrap;color:var(--ink2);transition:background .15s,color .15s,box-shadow .15s}
+.seg label:hover{color:var(--ink)}
+@media (max-width:520px){.seg{flex-direction:column}.seg label{text-align:left;padding-left:14px}}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--sheet);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(22,34,44,.18)}
+.seg label:has(input:focus-visible){outline:2.5px solid var(--blue);outline-offset:1px}
+.chk{display:flex;gap:12px;align-items:center;font-size:15px;cursor:pointer;line-height:1.35}
+.chk input{-webkit-appearance:none;appearance:none;flex:none;width:46px;height:28px;margin:0;border-radius:14px;background:var(--rule);position:relative;cursor:pointer;transition:background .18s}
+.chk input::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:var(--knob);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .18s}
+.chk input:checked{background:var(--accent)}
+.chk input:checked::after{transform:translateX(18px)}
+.qgrid{display:grid;grid-template-columns:1fr 136px;gap:12px;align-items:center;font-size:15px;line-height:1.35}
+.qgrid small{display:block;color:var(--ink2);font-size:13px}
+.qgrid .fld{gap:3px}
+.qgrid .lbl{text-align:center;font-size:12px}
+details.blk>summary{cursor:pointer;font-family:var(--f-display);font-size:25px;line-height:1.1;list-style-position:outside;margin-left:22px;-webkit-text-stroke:.25px currentColor}
+.res{background:var(--sheet);border:1.5px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.res h3{padding:16px 20px 12px}
+.lines{padding:0 20px 8px;display:flex;flex-direction:column}
+.ln{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:15px}
+.ln small{display:block;color:var(--ink2);font-size:13px}
+.ln .num{white-space:nowrap;font-size:19px}
+.ln.minus .num{color:var(--ok)}
+.total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:16px 20px;background:var(--accent-soft)}
+.total .num{font-size:clamp(40px,6vw,52px);line-height:1;color:var(--accent);white-space:nowrap;-webkit-text-stroke:.5px currentColor}
+.res .act{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px}
+.res .act .btn{width:100%}
+.fine{font-size:13px;color:var(--ink2)}
+#copyBox{width:100%;min-height:120px;font:400 13px var(--f-body);color:var(--ink);background:var(--tint);border:1px solid var(--rule);border-radius:var(--r-s);padding:10px}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;counter-reset:st;margin-bottom:38px}
+.steps li{list-style:none;padding:20px;counter-increment:st;font-size:15px;color:var(--ink2);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--shadow)}
+.steps li::before{content:counter(st);font:400 40px/1 var(--f-display);color:var(--accent);display:block;margin-bottom:10px}
+.steps b{display:block;color:var(--ink);font:400 23px/1.1 var(--f-display);letter-spacing:.01em;margin-bottom:6px}
+.terms{display:grid;gap:10px;max-width:70ch}
+.terms li{list-style:none;padding-left:28px;position:relative}
+.terms li::before{content:"";position:absolute;left:0;top:.72em;width:16px;border-top:2px solid var(--accent)}
+.qa{display:grid;gap:16px;max-width:70ch;margin:0}
+.qa dt{font-weight:600}
+.qa dd{margin:2px 0 0;color:var(--ink2)}
+.sub{margin-bottom:14px}
+
+.ad{border:1.5px dashed var(--ink2);border-radius:var(--r);padding:22px;display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between}
+.ad p{max-width:60ch;margin-top:4px}
+
+.stamp{display:grid;grid-template-columns:1fr;border-top:1.5px solid var(--ink)}
+.stamp>div{padding:12px clamp(16px,4vw,24px);border-bottom:1px solid var(--ink);display:flex;flex-direction:column;gap:2px}
+.stamp>div:last-child{border-bottom:0}
+.stamp .k{font:400 16px/1.1 var(--f-display);color:var(--ink2);letter-spacing:.02em}
+.stamp .v{font:400 22px/1.15 var(--f-display);letter-spacing:.02em}
+.stamp .big{font:400 28px/1.05 var(--f-display);letter-spacing:.01em}
+@media (min-width:820px){
+  .stamp{grid-template-columns:1.2fr 2fr 1.6fr}
+  .stamp>div{border-bottom:0;border-left:1px solid var(--ink)}
+  .stamp>div:first-child{border-left:0}
+}
+.cwrap{display:grid;grid-template-columns:1fr;gap:24px;align-items:center}
+@media (min-width:820px){.cwrap{grid-template-columns:1.2fr 1fr;gap:48px}}
+@media (max-width:979px){#kontakty{padding-bottom:88px}}
+.cname{font:400 32px/1.1 var(--f-display);letter-spacing:.01em;word-spacing:-.14em;margin:16px 0 6px}
+.cbox{background:var(--tint);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:4px}
+.cphone{font-size:36px;line-height:1.1}
+.ctg{font-size:16px;color:var(--ink2)}
+.cbox .row{margin-top:14px}
+.fab{position:fixed;right:16px;bottom:16px;z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.bar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:6;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--sheet);border-top:1px solid var(--rule);box-shadow:0 -6px 20px rgba(22,34,44,.12)}
+.bar .lbl{display:block;line-height:1.2}
+.bar .num{font-size:30px;line-height:1;color:var(--accent);-webkit-text-stroke:.4px currentColor}
+@media (max-width:979px){body.calc-on .bar{display:flex}body.calc-on .fab{display:none}body.calc-on{padding-bottom:76px}}
+@media (min-width:980px){.fab{display:none}}
+</style>
+</head>
+<body>
+<div class="sheet"><div class="frame">
+
+<div class="draft" id="draft" hidden>Черновик. Контакты ещё не подключены, кнопки связи откроют выбор чата.</div>
+
+<header class="top">
+  <a class="brand" href="#top" id="brand">Камеральная обработка</a>
+  <nav class="nav" aria-label="Разделы">
+    <a href="#raboty">Работы</a>
+    <a href="#ceny">Цены</a>
+    <a href="#kalkulyator">Калькулятор</a>
+    <a href="#usloviya">Условия</a>
+    <a href="#kontakty">Контакты</a>
+  </nav>
+</header>
+
+<div class="pad hero" id="top">
+  <div>
+    <p class="eyebrow">Камеральная обработка · удалённо</p>
+    <h1>Исполнительные схемы и&nbsp;подсчёт <em>объёмов</em></h1>
+    <p class="lead">Оформляю исполнительную документацию по вашему проекту и съёмке: мосты, земляные работы, здания, дороги, сети. Сдаю чертежи в DWG и листы в PDF, готовые к печати.</p>
+    <div class="row">
+      <a class="btn primary" href="#kalkulyator">Рассчитать стоимость</a>
+      <a class="btn wa js-wa" href="https://wa.me/" target="_blank" rel="noopener">Написать в WhatsApp</a>
+      <a class="btn js-tg" href="https://t.me/" target="_blank" rel="noopener" hidden>Telegram</a>
+    </div>
+    <div class="facts">
+      <div><b>от 6 000 ₸</b>за лист схемы</div>
+      <div><b>до −35%</b>на пакет схем</div>
+      <div><b>24–48 ч</b>срочные заказы</div>
+    </div>
+  </div>
+  <figure class="drawing">
+    <svg viewBox="0 0 520 330" role="img" aria-label="Условный пример исполнительной схемы: поперечный профиль насыпи с проектным контуром, фактической линией и стрелками отклонений">
+      <g class="s-cross">
+        <path d="M60 36v12M54 42h12M200 36v12M194 42h12M340 36v12M334 42h12M480 36v12M474 42h12M60 296v12M54 302h12M480 296v12M474 302h12"/>
+      </g>
+      <path class="s-thin" d="M12 262H508"/>
+      <path class="s-thin" d="M20 262l-8 10M44 262l-8 10M68 262l-8 10M452 262l-8 10M476 262l-8 10M500 262l-8 10"/>
+      <path class="s-thin" d="M25 262L190 152H330L495 262"/>
+      <path class="s-axis" d="M260 70V290"/>
+      <text class="t-ax" x="266" y="82">ось</text>
+      <path class="s-thin" d="M190 152V104M330 152V104M184 112H336M187 116l6-8M327 116l6-8"/>
+      <text class="t-dim" x="222" y="106" text-anchor="middle">7.00</text>
+      <text class="t-dim" x="36" y="242" transform="rotate(-33.7 36 242)">1:1.5</text>
+      <text class="t-dim" x="442" y="212" transform="rotate(33.7 442 212)">1:1.5</text>
+      <path class="s-fact" d="M19 262L187 158L260 147L333 155L500 262"/>
+      <g class="dv"><path class="s-dev" d="M190 124v22"/><path class="f-dev" d="M190 152l-4.5-9h9z"/><text class="t-dev" x="164" y="140">12</text></g>
+      <g class="dv"><path class="s-dev" d="M260 176v-22"/><path class="f-dev" d="M260 148l-4.5 9h9z"/><text class="t-dev" x="268" y="176">8</text></g>
+      <g class="dv"><path class="s-dev" d="M330 124v22"/><path class="f-dev" d="M330 152l-4.5-9h9z"/><text class="t-dev" x="338" y="140">0</text></g>
+      <g class="dv"><path class="s-dev" d="M138 212h-24"/><path class="f-dev" d="M107 212l9-4.5v9z"/><text class="t-dev" x="116" y="204">15</text></g>
+      <g class="dv"><path class="s-dev" d="M382 212h24"/><path class="f-dev" d="M413 212l-9-4.5v9z"/><text class="t-dev" x="384" y="204">10</text></g>
+      <text class="t-dim" x="260" y="312" text-anchor="middle">ПК 12+40.00 · отклонения в мм</text>
+    </svg>
+    <figcaption>
+      <span>Условный пример оформления</span>
+      <span><span class="lg"><i></i>проект</span> &nbsp; <span class="lg"><i class="f"></i>факт</span></span>
+    </figcaption>
+  </figure>
+</div>
+
+<section class="pad" id="raboty">
+  <div class="head">
+    <h2>Какие работы беру</h2>
+    <p class="muted">Слева цена за один лист исполнительной схемы в тенге. Она зависит от сложности конструкции.</p>
+  </div>
+  <div class="cats" id="cats"></div>
+</section>
+
+<section class="pad" id="ceny">
+  <div class="head">
+    <h2>Цены</h2>
+    <p class="muted">Все цены в тенге. Точную сумму называю после просмотра проекта.</p>
+  </div>
+  <div class="tiers">
+    <div class="tier"><h3>Простые схемы</h3><div class="num">6 000 <small>₸ / лист</small></div><p>Котлованы, траншеи, засыпка, планировка, бордюры, лотки, колодцы.</p></div>
+    <div class="tier"><h3>Средние схемы</h3><div class="num">8 000 <small>₸ / лист</small></div><p>Насыпи, земполотно, дорожная одежда, сети, фундаменты, монолит, конусы, русло.</p></div>
+    <div class="tier c"><h3>Сложные схемы</h3><div class="num">11 000 <small>₸ / лист</small></div><p>Пролётные строения, ригели, путепроводы, каналы, сборный каркас, профили сетей.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="tw"><table>
+      <caption>Скидки и доплаты на схемы</caption>
+      <tbody>
+        <tr><td>Повторный лист: та же конструкция на другом пикете или захватке</td><td class="num">80% цены</td></tr>
+        <tr><td>От 5 листов в заказе</td><td class="num">−5%</td></tr>
+        <tr><td>От 10 листов</td><td class="num">−10%</td></tr>
+        <tr><td>От 20 листов</td><td class="num">−15%</td></tr>
+        <tr><td>От 50 листов</td><td class="num">−20%</td></tr>
+        <tr><td>Проект в DWG или DXF вместо PDF</td><td class="num">−10%</td></tr>
+        <tr><td>Постоянным клиентам со второго заказа</td><td class="num">−5%</td></tr>
+        <tr><td>Проект только сканом или фото</td><td class="num">+20%</td></tr>
+        <tr><td>Нанесение фактических отклонений по вашей съёмке</td><td class="num">+20%</td></tr>
+        <tr><td>Срочно, за 48 часов</td><td class="num">×1.5</td></tr>
+        <tr><td>Срочно, за 24 часа</td><td class="num">×2</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Скидки складываются, но не больше 35%. Лист не стоит меньше 4 500 ₸. Минимальный заказ 15 000 ₸.</p></div>
+    <div class="tw"><table id="tblVol"><caption>Подсчёт объёмов</caption><tbody></tbody></table></div>
+    <div class="tw"><table id="tblProc"><caption>Обработка съёмок и чертежи</caption><tbody></tbody></table></div>
+    <div class="tw"><table id="tblDocs"><caption>Документы</caption><tbody></tbody></table></div>
+  </div>
+</section>
+
+<section class="pad" id="kalkulyator">
+  <div class="head">
+    <h2>Калькулятор</h2>
+    <p class="muted">Соберите заказ и отправьте расчёт в мессенджер. Печатать ничего не нужно.</p>
+  </div>
+  <div class="calc">
+    <form id="form" autocomplete="off">
+      <div class="blk">
+        <h3>Исполнительные схемы<span id="exNote">Пример. Замените на свои работы.</span></h3>
+        <div id="rows" style="display:flex;flex-direction:column;gap:12px"></div>
+        <div><button type="button" class="btn small" id="addRow">+ Добавить вид работ</button></div>
+        <p class="fine">Повторные листы: та же конструкция на другом пикете, оси или захватке. Первый лист серии идёт по полной цене, остальные за 80%.</p>
+        <div class="fld">
+          <span class="lbl">В каком виде проект</span>
+          <div class="seg" role="radiogroup" aria-label="Формат проекта">
+            <label><input type="radio" name="fmt" id="fmt-pdf" value="pdf" checked>PDF</label>
+            <label><input type="radio" name="fmt" id="fmt-dwg" value="dwg">DWG / DXF −10%</label>
+            <label><input type="radio" name="fmt" id="fmt-scan" value="scan">Скан, фото +20%</label>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="dev"><span>Нанести фактические отклонения по съёмке, +20%</span></label>
+        <label class="chk"><input type="checkbox" id="kit"><span>Собрать комплект исполнительной документации под сдачу, +15% к схемам</span></label>
+      </div>
+
+      <div class="blk">
+        <h3>Подсчёт объёмов</h3>
+        <div class="qgrid" id="volGrid"></div>
+      </div>
+
+      <details class="blk" id="otherBlk">
+        <summary>Обработка съёмок, чертежи, акты<span>по желанию</span></summary>
+        <div class="qgrid" id="otherGrid"></div>
+      </details>
+
+      <div class="blk">
+        <h3>Срок и условия</h3>
+        <div class="seg" role="radiogroup" aria-label="Срочность">
+          <label><input type="radio" name="urg" id="urg-1" value="1" checked>Обычный срок</label>
+          <label><input type="radio" name="urg" id="urg-15" value="1.5">48 часов ×1.5</label>
+          <label><input type="radio" name="urg" id="urg-2" value="2">24 часа ×2</label>
+        </div>
+        <label class="chk"><input type="checkbox" id="regular"><span>Уже заказывал раньше, −5%</span></label>
+      </div>
+    </form>
+
+    <aside class="res" aria-live="polite">
+      <h3>Ваш расчёт</h3>
+      <div class="lines" id="lines"></div>
+      <div class="total"><span>Итого примерно</span><span class="num" id="total">0 ₸</span></div>
+      <div class="act">
+        <a class="btn wa" id="sendWa" href="https://wa.me/" target="_blank" rel="noopener">Отправить расчёт в WhatsApp</a>
+        <a class="btn" id="sendTg" href="https://t.me/" target="_blank" rel="noopener" hidden>Отправить в Telegram</a>
+        <button type="button" class="btn ghost" id="copy">Скопировать расчёт</button>
+        <textarea id="copyBox" readonly hidden aria-label="Текст расчёта"></textarea>
+        <p class="fine">Расчёт предварительный. Срочные сроки подтверждаю лично: они зависят от количества листов.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="pad" id="usloviya">
+  <div class="head"><h2>Как работаем</h2></div>
+  <ol class="steps">
+    <li><b>Присылаете данные</b>Проект в PDF, DWG или DXF. Съёмку в DWG, DXF или списком координат.</li>
+    <li><b>Называю цену и срок</b>Смотрю объём, отвечаю точной суммой. Расчёт из калькулятора ускорит ответ.</li>
+    <li><b>Делаю схемы</b>По вашему проекту и вашим требованиям к оформлению. Могу работать в шаблоне заказчика.</li>
+    <li><b>Сдаю и правлю</b>Получаете DWG и PDF. Два круга правок входят в цену.</li>
+  </ol>
+  <div class="grid2">
+    <div>
+      <h3 class="sub">Условия</h3>
+      <ul class="terms">
+        <li>Два круга правок бесплатно.</li>
+        <li>Если после сдачи изменился проект, правка стоит 50% цены листа.</li>
+        <li>Первый заказ с предоплатой 50%. Постоянным клиентам оплата по факту.</li>
+        <li>Со второго заказа скидка 5%.</li>
+        <li>Минимальный заказ 15 000 ₸.</li>
+        <li>Пакетная печать листов в PDF бесплатно.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="sub">Частые вопросы</h3>
+      <dl class="qa">
+        <div><dt>Нужно ли приезжать на объект?</dt><dd>Нет. Работа камеральная: вы присылаете исходные данные, я возвращаю готовые файлы.</dd></div>
+        <div><dt>Проект есть только в PDF. Это проблема?</dt><dd>Нет, PDF считается обычным случаем. За DWG или DXF даю скидку 10%.</dd></div>
+        <div><dt>Кто наносит фактические отклонения?</dt><dd>Могу нанести я по вашей съёмке, это +20%. Или сдаю схемы без них, и вы вносите отклонения сами.</dd></div>
+        <div><dt>Схем много и они похожи. Будет дешевле?</dt><dd>Да. Повторные листы идут за 80%, плюс скидка за количество до 20%.</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="pad" id="reklama">
+  <div class="ad">
+    <div>
+      <h3>Место для рекламы</h3>
+      <p class="muted">Геодезическое оборудование, аренда и поверка приборов, обучение AutoCAD и Civil 3D, смежные услуги для стройки.</p>
+    </div>
+    <a class="btn small js-wa-ad" href="https://wa.me/" target="_blank" rel="noopener">Обсудить размещение</a>
+  </div>
+</section>
+
+<section class="pad" id="kontakty">
+  <div class="cwrap">
+    <div>
+      <h2>Контакты</h2>
+      <p class="cname" id="stName">Камеральная обработка</p>
+      <p class="muted">Исполнительные схемы и подсчёт объёмов. Работаю удалённо, отвечаю в мессенджерах.</p>
+    </div>
+    <div class="cbox">
+      <span class="lbl">Телефон и WhatsApp</span>
+      <span class="num cphone" id="stPhone" hidden></span>
+      <span class="ctg" id="stTg" hidden></span>
+      <div class="row">
+        <a class="btn wa js-wa" href="https://wa.me/" target="_blank" rel="noopener">Написать в WhatsApp</a>
+        <a class="btn js-tg" href="https://t.me/" target="_blank" rel="noopener" hidden>Telegram</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div>
+<div class="bar" id="bar"><div><span class="lbl">Итого примерно</span><span class="num" id="barTotal">0 ₸</span></div><a class="btn wa small" id="barWa" href="https://wa.me/" target="_blank" rel="noopener">Отправить расчёт</a></div>
+<a class="btn wa small fab js-wa" href="https://wa.me/" target="_blank" rel="noopener" aria-label="Написать в WhatsApp">WhatsApp</a>
+
+<script>
+/* Настройки: сюда вписываются имя и контакты */
+const CONFIG={name:'Сербин Дмитрий',whatsapp:'+7 747 558 61 22',telegram:'Kontur_Pro_Geodeziya'};
+
+/*CALC-START*/
+const P={tiers:{A:6000,B:8000,C:11000},repeat:0.8,cap:0.35,floor:4500,minOrder:15000,dwg:10,scan:20,dev:20,regular:5,kit:15};
+function volPct(n){return n>=50?20:n>=20?15:n>=10?10:n>=5?5:0}
+function extraHa(ha){return Math.ceil(Math.max(ha-1,0)-1e-9)}
+const VOLF={
+  lin:km=>Math.min(km,5)*12000+Math.min(Math.max(km-5,0),15)*10000+Math.max(km-20,0)*8000,
+  area:ha=>ha>0?10000+extraHa(ha)*3000:0,
+  karto:ha=>ha>0?20000+extraHa(ha)*5000:0,
+  sklad:n=>n*5000,
+  karier:n=>n*25000,
+  proj:n=>n*10000
+};
+const OTHF={
+  tah:n=>n*5000,gnss:n=>n*5000,hod:n=>n*10000,kat:n=>n*3000,
+  topo:ha=>ha>0?12000+extraHa(ha)*6000:0,
+  gen:n=>n*15000,prof:km=>km*8000,
+  pop:n=>Math.min(n,20)*1000+Math.max(n-20,0)*500,
+  razb:n=>n*7000,vynos:n=>n*5000,pdf1:n=>n*5000,pdf2:n=>n*10000,sk:n=>n*5000,cmr:n=>n*10000,mon:n=>n*10000,
+  akt:n=>n*3000,ved:n=>n*3000
+};
+function calc(s){
+  let full=0,afterRepeat=0,N=0;
+  for(const r of s.rows){
+    const n=Math.max(0,Math.floor(r.n||0)); if(!n) continue;
+    const rep=Math.min(Math.max(0,Math.floor(r.r||0)),n-1);
+    full+=n*r.p; afterRepeat+=(n-rep)*r.p+rep*r.p*P.repeat; N+=n;
+  }
+  const vp=volPct(N);
+  const pct=vp+(s.regular?P.regular:0)+(s.format==='dwg'?P.dwg:0);
+  const afterDisc=afterRepeat*(1-pct/100);
+  const capFloor=full*(1-P.cap), sheetFloor=N*P.floor;
+  const isBase=Math.min(afterRepeat,Math.max(afterDisc,capFloor,sheetFloor));
+  const limit=isBase>afterDisc+0.5?(sheetFloor>=capFloor?'floor':'cap'):'';
+  const surPct=(s.format==='scan'?P.scan:0)+(s.dev?P.dev:0);
+  const isSum=isBase*(1+surPct/100);
+  const kit=s.kit?isSum*P.kit/100:0;
+  let vol=0; for(const k in VOLF){vol+=VOLF[k](Math.max(0,+s.vol[k]||0))}
+  let oth=0; for(const k in OTHF){oth+=OTHF[k](Math.max(0,+s.other[k]||0))}
+  const rk=s.regular?(1-P.regular/100):1;
+  const volR=vol*rk, othR=oth*rk;
+  const sub=isSum+kit+volR+othR;
+  const urg=+s.urgency||1;
+  const withUrg=sub*urg;
+  let total=Math.round(withUrg/100)*100, minApplied=false;
+  if(total>0&&total<P.minOrder){total=P.minOrder;minApplied=true}
+  return {N,full,repeatDisc:full-afterRepeat,pct,vp,pctDisc:afterRepeat-isBase,limit,isBase,surPct,surSum:isSum-isBase,isSum,kit,vol:volR,oth:othR,sub,urg,urgSum:withUrg-sub,total,minApplied,perSheet:N?isSum/N:0};
+}
+/*CALC-END*/
+
+const CATALOG=[
+ {cat:'Земляные работы',items:[['Разработка котлована','A'],['Разработка траншей','A'],['Обратная засыпка','A'],['Планировка территории','A'],['Срезка растительного слоя','A'],['Выемки','B'],['Отсыпка насыпи','B'],['Земполотно железных дорог','B'],['Земполотно автодорог','B'],['Дамбы и валы','B'],['Каналы и арыки','C']]},
+ {cat:'Мосты и ИССО',items:[['Котлованы под опоры','A'],['Фундаменты опор','B'],['Сваи и стойки','B'],['Отсыпка конусов','B'],['Укрепление откосов','B'],['Бетонирование русла','B'],['Подпорные стенки','B'],['Лестничные сходы','B'],['Водопропускные трубы','B'],['Ригели и насадки','C'],['Пролётные строения','C'],['Путепроводы','C']]},
+ {cat:'Здания и сооружения',items:[['Закладные и анкеры','A'],['Свайное поле','B'],['Ростверки','B'],['Фундаментные плиты','B'],['Ленточные фундаменты','B'],['Монолитные колонны','B'],['Монолитные стены','B'],['Перекрытия','B'],['Металлоконструкции','B'],['Вертикальность колонн','B'],['Сборный железобетонный каркас','C'],['Фундаменты под оборудование','C']]},
+ {cat:'Дороги, ЖД и благоустройство',items:[['Бордюры','A'],['Водоотводные лотки и кюветы','A'],['Тротуары и площадки','A'],['Вертикальная планировка','A'],['Ограждения','A'],['Слои дорожной одежды','B'],['Основания из ЩПС и ПГС','B'],['Асфальтобетон','B'],['Верхнее строение пути','B'],['Балластная призма','B']]},
+ {cat:'Инженерные сети',items:[['Колодцы и камеры','A'],['Водопровод','B'],['Канализация','B'],['Ливнёвка','B'],['Теплосеть','B'],['Газопровод','B'],['Кабельные линии','B'],['Опоры ЛЭП и освещения','B'],['Продольные профили сетей','C']]}
+];
+const VOL=[
+ ['lin','Линейный объект по поперечникам','км','12 000 / км до 5 км, 10 000 до 20 км, далее 8 000',0.5],
+ ['area','Площадка по съёмкам до и после','га','10 000 до 1 га, +3 000 за каждый следующий',0.5],
+ ['karto','Картограмма земляных масс','га','20 000 до 1 га, +5 000 за каждый следующий',0.5],
+ ['sklad','Склады и отвалы','шт.','5 000 за склад',1],
+ ['karier','Карьер, выработка за период','съёмок','25 000 за съёмку',1],
+ ['proj','Объёмы по проекту: ведомость, пересчёт','разделов','10 000 за раздел',1]
+];
+const OTHER=[
+ ['tah','Обработка тахеометрии','съёмок до 500 точек','5 000',1,'p'],
+ ['gnss','Обработка GNSS','наборов до 10 пунктов','5 000',1,'p'],
+ ['hod','Уравнивание хода','ходов','10 000',1,'p'],
+ ['kat','Каталог координат','наборов до 50 точек','3 000',1,'p'],
+ ['topo','Топоплан 1:500, камерально','га','12 000 за первый га, +6 000 за следующий',0.5,'p'],
+ ['gen','Исполнительная съёмка в генплан','объектов до 1 га','15 000',1,'p'],
+ ['prof','Продольный профиль','км','8 000 / км',0.5,'p'],
+ ['pop','Поперечники','шт.','1 000 / шт. до 20, далее 500',1,'p'],
+ ['razb','Разбивочный чертёж','листов','7 000 / лист',1,'p'],
+ ['vynos','Координаты для выноса','наборов до 50 точек','5 000',1,'p'],
+ ['pdf1','Перевод PDF в DWG, простой лист','листов','5 000 / лист',1,'p'],
+ ['pdf2','Перевод PDF в DWG, сложный лист','листов','10 000 / лист',1,'p'],
+ ['sk','Пересчёт системы координат','файлов','5 000 / файл',1,'p'],
+ ['cmr','Цифровая модель рельефа','объектов до 1 га','10 000',1,'p'],
+ ['mon','Мониторинг осадок: ведомость и график','циклов','10 000 / цикл',1,'p'],
+ ['akt','Акт разбивки осей, передачи ГРО, скрытых работ','актов','3 000 / акт',1,'d'],
+ ['ved','Ведомость отклонений','шт.','3 000',1,'d']
+];
+const ITEMS=[];CATALOG.forEach(c=>c.items.forEach(it=>ITEMS.push({name:it[0],tier:it[1],cat:c.cat})));
+const fmt=n=>Math.round(n).toLocaleString('ru-RU').replace(/ | /g,' ');
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function stp(attrs){return `<div class="stp"><button type="button" class="sb" data-d="-1" aria-label="Меньше">−</button><input type="number" min="0" inputmode="decimal" placeholder="0" ${attrs}><button type="button" class="sb" data-d="1" aria-label="Больше">+</button></div>`}
+function renderStatic(){
+  $('cats').innerHTML=CATALOG.map(c=>{
+    const lines=['A','B','C'].map(t=>{
+      const names=c.items.filter(i=>i[1]===t).map(i=>esc(i[0]));
+      return names.length?`<div class="tl t-${t}"><span class="num">${fmt(P.tiers[t])}</span><span>${names.join(', ')}</span></div>`:'';
+    }).join('');
+    return `<div class="cat"><h3>${esc(c.cat)}</h3>${lines}</div>`;
+  }).join('')+'<div class="cat more"><h3>Кроме схем</h3><p>Подсчёт объёмов, обработка съёмок, топопланы, профили, разбивочные чертежи, акты и ведомости.</p><p><a href="#ceny">Цены на эти работы</a></p></div>';
+  $('tblVol').tBodies[0].innerHTML=VOL.map(v=>`<tr><td>${esc(v[1])}</td><td class="num">${esc(v[3])}</td></tr>`).join('');
+  $('tblProc').tBodies[0].innerHTML=OTHER.filter(o=>o[5]==='p').map(o=>`<tr><td>${esc(o[1])}${/до \d/.test(o[2])?` <span class="muted">(${esc(o[2].replace(/^\S+ /,''))})</span>`:''}</td><td class="num">${esc(o[3])}</td></tr>`).join('');
+  $('tblDocs').tBodies[0].innerHTML=OTHER.filter(o=>o[5]==='d').map(o=>`<tr><td>${esc(o[1])}</td><td class="num">${esc(o[3])}</td></tr>`).join('')
+    +'<tr><td>Комплект исполнительной документации под сдачу</td><td class="num">+15% к схемам</td></tr>'
+    +'<tr><td>Шаблон схем под требования заказчика</td><td class="num">15 000 разово</td></tr>'
+    +'<tr><td>Пакетная печать листов в PDF</td><td class="num">бесплатно</td></tr>';
+  $('volGrid').innerHTML=VOL.map(v=>`<label for="v-${v[0]}">${esc(v[1])}<small>${esc(v[3])}</small></label><div class="fld">${stp(`id="v-${v[0]}" step="${v[4]}" aria-describedby="vu-${v[0]}"`)}<span class="lbl" id="vu-${v[0]}">${esc(v[2])}</span></div>`).join('');
+  $('otherGrid').innerHTML=OTHER.map(o=>`<label for="o-${o[0]}">${esc(o[1])}<small>${esc(o[3])}</small></label><div class="fld">${stp(`id="o-${o[0]}" step="${o[4]}" aria-describedby="ou-${o[0]}"`)}<span class="lbl" id="ou-${o[0]}">${esc(o[2])}</span></div>`).join('');
+}
+
+const DEF_ITEM=ITEMS.findIndex(i=>i.name==='Отсыпка конусов');
+let state={rows:[{i:DEF_ITEM,n:4,r:3}],format:'pdf',dev:false,kit:false,regular:false,urgency:1,vol:{},other:{},touched:false};
+let rowSeq=0;
+
+function optionsHtml(sel){
+  return CATALOG.map(c=>`<optgroup label="${esc(c.cat)}">`+ITEMS.map((it,idx)=>it.cat===c.cat?`<option value="${idx}"${idx===sel?' selected':''}>${esc(it.name)} · ${fmt(P.tiers[it.tier])}</option>`:'').join('')+'</optgroup>').join('');
+}
+function renderRows(){
+  $('rows').innerHTML=state.rows.map((r,k)=>{
+    const id=++rowSeq;
+    return `<div class="crow" data-k="${k}">
+      <div class="fld f-sel"><label for="rw-${id}">Вид работ</label><select id="rw-${id}" data-f="i">${optionsHtml(r.i)}</select></div>
+      <div class="fld"><label for="rn-${id}">Листов</label>${stp(`id="rn-${id}" data-f="n" step="1" value="${r.n}"`)}</div>
+      <div class="fld"><label for="rr-${id}">Из них повторных</label>${stp(`id="rr-${id}" data-f="r" step="1" value="${r.r}"`)}</div>
+      <button type="button" class="del" data-del="${k}" aria-label="Убрать строку" ${state.rows.length<2?'hidden':''}>×</button>
+    </div>`;
+  }).join('');
+}
+function calcInput(){
+  return {rows:state.rows.map(r=>({p:P.tiers[ITEMS[r.i].tier],n:r.n,r:r.r})),format:state.format,dev:state.dev,kit:state.kit,regular:state.regular,urgency:state.urgency,vol:state.vol,other:state.other};
+}
+function buildMessage(c){
+  const L=['Здравствуйте! Нужен расчёт.'];
+  const rows=state.rows.filter(r=>r.n>0);
+  if(rows.length){L.push('Исполнительные схемы:');rows.forEach(r=>L.push('- '+ITEMS[r.i].name+': '+r.n+' л.'+(r.r>0&&r.n>1?' (повторных '+Math.min(r.r,r.n-1)+')':'')));
+    L.push('Проект: '+({pdf:'PDF',dwg:'DWG/DXF',scan:'скан или фото'})[state.format]);
+    if(state.dev)L.push('Нужно нанести фактические отклонения');
+    if(state.kit)L.push('Нужен комплект ИД под сдачу');}
+  const v=VOL.filter(x=>+state.vol[x[0]]>0);
+  if(v.length){L.push('Подсчёт объёмов:');v.forEach(x=>L.push('- '+x[1]+': '+state.vol[x[0]]+' '+x[2]))}
+  const o=OTHER.filter(x=>+state.other[x[0]]>0);
+  if(o.length){L.push('Дополнительно:');o.forEach(x=>L.push('- '+x[1]+': '+state.other[x[0]]))}
+  L.push('Срок: '+({1:'обычный',1.5:'срочно, 48 часов',2:'срочно, 24 часа'})[state.urgency]);
+  if(state.regular)L.push('Заказываю не первый раз');
+  L.push('Предварительно по калькулятору: '+fmt(c.total)+' тг');
+  return L.join('\n');
+}
+function line(label,sub,val,cls){return `<div class="ln ${cls||''}"><span>${label}${sub?`<small>${sub}</small>`:''}</span><span class="num">${val}</span></div>`}
+function recalc(){
+  const c=calc(calcInput());
+  const out=[];
+  if(c.N){
+    out.push(line('Схемы, '+c.N+' л.','по полной цене',fmt(c.full)+' ₸'));
+    if(c.repeatDisc>0)out.push(line('Повторные листы','80% цены','−'+fmt(c.repeatDisc)+' ₸','minus'));
+    if(c.pctDisc>0){
+      const parts=[];if(c.vp)parts.push('количество '+c.vp+'%');if(state.format==='dwg')parts.push('DWG 10%');if(state.regular)parts.push('постоянный 5%');
+      let sub=parts.join(' + ');
+      if(c.limit==='cap')sub+='. Сработал потолок 35%';
+      if(c.limit==='floor')sub+='. Лист не дешевле 4 500 ₸';
+      out.push(line('Скидки',sub,'−'+fmt(c.pctDisc)+' ₸','minus'));
+    }
+    if(c.surSum>0)out.push(line('Доплаты',[state.format==='scan'?'скан +20%':'',state.dev?'отклонения +20%':''].filter(Boolean).join(' + '),'+'+fmt(c.surSum)+' ₸'));
+    if(c.kit>0)out.push(line('Комплект ИД под сдачу','+15% к схемам','+'+fmt(c.kit)+' ₸'));
+    out.push(line('В среднем за лист','',fmt(c.perSheet)+' ₸'));
+  }
+  if(c.vol>0)out.push(line('Подсчёт объёмов',state.regular?'со скидкой 5%':'',fmt(c.vol)+' ₸'));
+  if(c.oth>0)out.push(line('Обработка, чертежи, акты',state.regular?'со скидкой 5%':'',fmt(c.oth)+' ₸'));
+  if(c.urgSum>0)out.push(line('Срочность','×'+c.urg,'+'+fmt(c.urgSum)+' ₸'));
+  if(c.minApplied)out.push(line('Минимальный заказ','сумма поднята до минимума',fmt(P.minOrder)+' ₸'));
+  if(!out.length)out.push(line('Заказ пока пуст','укажите листы или объёмы','0 ₸'));
+  $('lines').innerHTML=out.join('');
+  $('total').textContent=fmt(c.total)+' ₸';
+  $('exNote').hidden=state.touched;
+  const msg=c.total?buildMessage(c):'Здравствуйте! Хочу заказать камеральную обработку.';
+  $('sendWa').href=waLink(msg);$('barWa').href=waLink(msg);$('barTotal').textContent=fmt(c.total)+' ₸';
+  if(CONFIG.telegram)$('sendTg').href='https://t.me/'+CONFIG.telegram.replace(/^@/,'')+'?text='+encodeURIComponent(msg);
+  $('copyBox').value=msg;
+}
+function waLink(text){return 'https://wa.me/'+CONFIG.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(text)}
+
+function wire(){
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('.sb');if(!b)return;
+    const inp=b.parentNode.querySelector('input'),st=+inp.step||1;
+    const v=Math.max(0,Math.round(((+inp.value||0)+(+b.dataset.d)*st)*100)/100);
+    inp.value=(v||inp.dataset.f)?v:'';
+    inp.dispatchEvent(new Event('input',{bubbles:true}));
+    inp.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  if('IntersectionObserver' in window){
+    let fIn=false,rIn=false;const upd=()=>document.body.classList.toggle('calc-on',fIn&&!rIn);
+    new IntersectionObserver(en=>{fIn=en[0].isIntersecting;upd()}).observe($('form'));
+    new IntersectionObserver(en=>{rIn=en[0].isIntersecting;upd()},{threshold:0.2}).observe(document.querySelector('.total'));
+  }
+  $('rows').addEventListener('input',e=>{
+    const row=e.target.closest('.crow');if(!row)return;
+    const r=state.rows[+row.dataset.k],f=e.target.dataset.f;
+    if(f==='i')r.i=+e.target.value;else r[f]=Math.max(0,Math.floor(+e.target.value||0));
+    state.touched=true;recalc();
+  });
+  $('rows').addEventListener('change',e=>{
+    const row=e.target.closest('.crow');if(!row)return;
+    const r=state.rows[+row.dataset.k];
+    const mx=Math.max(r.n-1,0);if(r.r>mx){r.r=mx;renderRows();recalc()}
+  });
+  $('rows').addEventListener('click',e=>{
+    const d=e.target.closest('[data-del]');if(!d)return;
+    state.rows.splice(+d.dataset.del,1);state.touched=true;renderRows();recalc();
+  });
+  $('addRow').addEventListener('click',()=>{state.rows.push({i:0,n:1,r:0});state.touched=true;renderRows();recalc()});
+  $('form').addEventListener('submit',e=>e.preventDefault());
+  $('form').addEventListener('input',e=>{
+    const t=e.target;
+    if(t.name==='fmt')state.format=t.value;
+    else if(t.name==='urg')state.urgency=+t.value;
+    else if(t.id==='dev'||t.id==='kit'||t.id==='regular')state[t.id]=t.checked;
+    else if(t.id.startsWith('v-'))state.vol[t.id.slice(2)]=Math.max(0,+t.value||0);
+    else if(t.id.startsWith('o-'))state.other[t.id.slice(2)]=Math.max(0,+t.value||0);
+    else return;
+    recalc();
+  });
+  $('copy').addEventListener('click',async()=>{
+    const b=$('copy');
+    try{await navigator.clipboard.writeText($('copyBox').value);b.textContent='Скопировано';setTimeout(()=>b.textContent='Скопировать расчёт',1800)}
+    catch(err){$('copyBox').hidden=false;$('copyBox').focus();$('copyBox').select();b.textContent='Выделено. Скопируйте вручную'}
+  });
+}
+function applyConfig(){
+  const hello='Здравствуйте! Хочу заказать камеральную обработку.';
+  document.querySelectorAll('.js-wa').forEach(a=>a.href=waLink(hello));
+  document.querySelectorAll('.js-wa-ad').forEach(a=>a.href=waLink('Здравствуйте! Хочу разместить рекламу на вашем сайте.'));
+  if(CONFIG.telegram){
+    const nick=CONFIG.telegram.replace(/^@/,'');
+    document.querySelectorAll('.js-tg').forEach(a=>{a.href='https://t.me/'+nick;a.hidden=false});
+    $('sendTg').hidden=false;
+  }
+  if(CONFIG.name){$('brand').textContent=CONFIG.name;$('stName').textContent=CONFIG.name}
+  if(CONFIG.whatsapp){$('stPhone').textContent=CONFIG.whatsapp;$('stPhone').hidden=false}
+  if(CONFIG.telegram){$('stTg').textContent='Telegram: @'+CONFIG.telegram.replace(/^@/,'');$('stTg').hidden=false}
+  $('draft').hidden=!!CONFIG.whatsapp;
+}
+function syncForm(){
+  const f=$('fmt-'+state.format);if(f)f.checked=true;
+  const u=$('urg-'+String(state.urgency).replace('.',''));if(u)u.checked=true;
+  ['dev','kit','regular'].forEach(k=>$(k).checked=!!state[k]);
+  for(const k in state.vol){const el=$('v-'+k);if(el&&state.vol[k])el.value=state.vol[k]}
+  let any=false;for(const k in state.other){const el=$('o-'+k);if(el&&state.other[k]){el.value=state.other[k];any=true}}
+  if(any)$('otherBlk').open=true;
+}
+function start(saved){
+  if(saved&&Array.isArray(saved.rows)&&saved.rows.length)state=Object.assign(state,saved);
+  renderStatic();renderRows();syncForm();wire();applyConfig();recalc();
+}
+start({});
+</script>
+</body>
+</html>
