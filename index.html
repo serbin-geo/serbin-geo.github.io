@@ -245,6 +245,14 @@ details.blk>summary{cursor:pointer;font-family:var(--f-display);font-size:25px;l
 .cphone{font-size:36px;line-height:1.1}
 .ctg{font-size:16px;color:var(--ink2)}
 .cbox .row{margin-top:14px}
+body:not(.m-company) [data-for="company"]{display:none!important}
+body.m-company [data-for="private"]{display:none!important}
+.mode{display:inline-flex;gap:4px;padding:4px;background:var(--tint);border-radius:var(--r);margin-bottom:24px}
+.mode button{font:500 15px/1.2 var(--f-body);padding:11px 20px;border:0;border-radius:var(--r-s);background:transparent;color:var(--ink2);cursor:pointer;transition:background .15s,color .15s,transform .08s}
+.mode button:hover{color:var(--ink)}
+.mode button:active{transform:scale(.97)}
+.mode button[aria-pressed="true"]{background:var(--ink);color:var(--sheet);font-weight:600}
+.sup-n{font-size:14px;color:var(--ink);font-weight:600}
 .imp{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .imp .fine{flex:1 1 100%}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
@@ -269,6 +277,7 @@ input[type=text]:hover,input[type=text]:focus{border-color:var(--ink2)}
 <header class="top">
   <a class="brand" href="#top" id="brand">Камеральная обработка</a>
   <nav class="nav" aria-label="Разделы">
+    <a href="#soprovozhdenie" data-for="company">Сопровождение</a>
     <a href="#raboty">Работы</a>
     <a href="#ceny">Цены</a>
     <a href="#kalkulyator">Калькулятор</a>
@@ -279,17 +288,28 @@ input[type=text]:hover,input[type=text]:focus{border-color:var(--ink2)}
 
 <div class="pad hero" id="top">
   <div>
-    <p class="eyebrow">Камеральная обработка · удалённо</p>
+    <div class="mode" role="group" aria-label="Для кого расчёт">
+      <button type="button" id="modeP" aria-pressed="true">Частное лицо</button>
+      <button type="button" id="modeC" aria-pressed="false">Компания</button>
+    </div>
+    <p class="eyebrow" data-for="private">Камеральная обработка · удалённо</p>
+    <p class="eyebrow" data-for="company">Для строительных и геодезических компаний · удалённо</p>
     <h1>Исполнительные схемы и&nbsp;подсчёт <em>объёмов</em></h1>
-    <p class="lead">Оформляю исполнительную документацию по вашему проекту и съёмке: мосты, земляные работы, здания, дороги, сети. Сдаю чертежи в DWG и листы в PDF, готовые к печати.</p>
+    <p class="lead" data-for="private">Оформляю исполнительную документацию по вашему проекту и съёмке: мосты, земляные работы, здания, дороги, сети. Сдаю чертежи в DWG и листы в PDF, готовые к печати.</p>
+    <p class="lead" data-for="company">Беру на себя исполнительную документацию по объекту: схемы, реестр, комплект под сдачу этапа. Работаю в шаблоне вашей компании, разово или с помесячным сопровождением.</p>
     <div class="row">
       <a class="btn primary" href="#kalkulyator">Рассчитать стоимость</a>
       <a class="btn wa js-wa" href="https://wa.me/" target="_blank" rel="noopener">Написать в WhatsApp</a>
       <a class="btn js-tg" href="https://t.me/" target="_blank" rel="noopener" hidden>Telegram</a>
     </div>
-    <div class="facts">
+    <div class="facts" data-for="private">
       <div><b>от 6 000 ₸</b>за лист схемы</div>
       <div><b>до −35%</b>на пакет схем</div>
+      <div><b>24–48 ч</b>срочные заказы</div>
+    </div>
+    <div class="facts" data-for="company">
+      <div><b>100 000 ₸</b>в месяц: сопровождение малого объекта</div>
+      <div><b>от 6 000 ₸</b>за лист разово</div>
       <div><b>24–48 ч</b>срочные заказы</div>
     </div>
   </div>
@@ -321,6 +341,36 @@ input[type=text]:hover,input[type=text]:focus{border-color:var(--ink2)}
     </figcaption>
   </figure>
 </div>
+
+<section class="pad" id="soprovozhdenie" data-for="company">
+  <div class="head">
+    <h2>Сопровождение объекта</h2>
+    <p class="muted">Веду исполнительную документацию по объекту до сдачи: вы присылаете проект и съёмки, я возвращаю готовые схемы, веду реестр и собираю комплект под приёмку этапа. Цена фиксирована на месяц.</p>
+  </div>
+  <div class="tiers" id="supCards"></div>
+  <div class="grid2">
+    <div>
+      <h3 class="sub">Что входит</h3>
+      <ul class="terms">
+        <li>Исполнительные схемы по всем видам работ из перечня, в пределах пакета.</li>
+        <li>Реестр схем по объекту: что сдано и что в работе.</li>
+        <li>Оформление в шаблоне вашей компании или заказчика.</li>
+        <li>Комплект исполнительной документации под сдачу этапа.</li>
+        <li>Чертежи в DWG и листы в PDF, готовые к печати.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="sub">Условия</h3>
+      <ul class="terms">
+        <li>Минимальный срок один месяц, дальше продлеваем по месяцам.</li>
+        <li>Листы сверх пакета по 5 500 ₸.</li>
+        <li>Подсчёт объёмов и остальные работы считаются по общему прайсу.</li>
+        <li>Разовый заказ без сопровождения считается по цене за лист, как для всех.</li>
+        <li>Чертежи и данные объекта третьим лицам не передаю.</li>
+      </ul>
+    </div>
+  </div>
+</section>
 
 <section class="pad" id="raboty">
   <div class="head">
@@ -403,6 +453,21 @@ input[type=text]:hover,input[type=text]:focus{border-color:var(--ink2)}
         <summary>Обработка съёмок, чертежи, акты<span>по желанию</span></summary>
         <div class="qgrid" id="otherGrid"></div>
       </details>
+
+      <div class="blk" data-for="company">
+        <h3>Сопровождение объекта<span>помесячно</span></h3>
+        <div class="seg" role="radiogroup" aria-label="Пакет сопровождения">
+          <label><input type="radio" name="sup" id="sup-0" value="" checked>Не нужно</label>
+          <label><input type="radio" name="sup" id="sup-s" value="s">Малый</label>
+          <label><input type="radio" name="sup" id="sup-m" value="m">Средний</label>
+          <label><input type="radio" name="sup" id="sup-l" value="l">Крупный</label>
+        </div>
+        <div class="qgrid">
+          <label for="supMonths">Сколько месяцев<small>минимум один</small></label>
+          <div class="fld"><div class="stp"><button type="button" class="sb" data-d="-1" aria-label="Меньше">−</button><input type="number" id="supMonths" min="1" step="1" inputmode="numeric" value="1"><button type="button" class="sb" data-d="1" aria-label="Больше">+</button></div></div>
+        </div>
+        <p class="fine">Малый объект: до 15 листов в месяц. Средний: до 40. Крупный: до 80. Разовые схемы и объёмы можно добавить выше, они посчитаются отдельно.</p>
+      </div>
 
       <div class="blk">
         <h3>Срок и условия</h3>
@@ -669,6 +734,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 function stp(attrs){return `<div class="stp"><button type="button" class="sb" data-d="-1" aria-label="Меньше">−</button><input type="number" min="0" inputmode="decimal" placeholder="0" ${attrs}><button type="button" class="sb" data-d="1" aria-label="Больше">+</button></div>`}
 function renderStatic(){
+  $('supCards').innerHTML=['s','m','l'].map(k=>{const p=SUP[k];return `<div class="tier${k==='l'?' c':''}"><h3>${esc(p.name)}</h3><div class="num">${fmt(p.price)} <small>₸ / месяц</small></div><p class="sup-n">до ${p.sheets} листов в месяц</p><p>${esc(p.ex)}</p></div>`}).join('');
   $('cats').innerHTML=CATALOG.map(c=>{
     const lines=['A','B','C'].map(t=>{
       const names=c.items.filter(i=>i[1]===t).map(i=>esc(i[0]));
@@ -687,7 +753,9 @@ function renderStatic(){
 }
 
 const DEF_ITEM=ITEMS.findIndex(i=>i.name==='Отсыпка конусов');
-let state={rows:[{i:DEF_ITEM,n:4,r:3}],format:'pdf',dev:false,kit:false,regular:false,urgency:1,vol:{},other:{},touched:false,reestr:''};
+let state={rows:[{i:DEF_ITEM,n:4,r:3}],format:'pdf',dev:false,kit:false,regular:false,urgency:1,vol:{},other:{},touched:false,reestr:'',mode:'p',sup:'',supMonths:1};
+const SUP={s:{name:'Малый объект',price:100000,sheets:15,ex:'Одно здание до 5 этажей, участок дороги или сетей до 2 км, малый мост.'},m:{name:'Средний объект',price:250000,sheets:40,ex:'Здание от 6 этажей или 2–3 здания, дорога до 10 км, мост с подходами.'},l:{name:'Крупный объект',price:450000,sheets:80,ex:'Жилой квартал, промплощадка, дорога свыше 10 км, несколько мостов.'}};
+const hello=()=>state.mode==='c'?'Здравствуйте! Пишу от компании, интересует камеральная обработка по объекту.':'Здравствуйте! Хочу заказать камеральную обработку.';
 const TIERN={A:'простая',B:'средняя',C:'сложная'};
 const rowPrice=r=>r.i>=0&&ITEMS[r.i]?P.tiers[ITEMS[r.i].tier]:P.tiers[r.t]||P.tiers.B;
 const rowName=r=>r.i>=0&&ITEMS[r.i]?ITEMS[r.i].name:((r.name||'').trim()||'Работа не из перечня')+' [нет в перечне, '+(TIERN[r.t]||TIERN.B)+']';
@@ -715,8 +783,8 @@ function renderRows(){
 function calcInput(){
   return {rows:state.rows.map(r=>({p:rowPrice(r),n:r.n,r:r.r})),format:state.format,dev:state.dev,kit:state.kit,regular:state.regular,urgency:state.urgency,vol:state.vol,other:state.other};
 }
-function buildMessage(c){
-  const L=['Здравствуйте! Нужен расчёт.'];
+function buildMessage(c,total,sup){
+  const L=[state.mode==='c'?'Здравствуйте! Пишу от компании. Нужен расчёт.':'Здравствуйте! Нужен расчёт.'];
   const rows=state.rows.filter(r=>r.n>0);
   if(rows.length){L.push('Исполнительные схемы:');rows.forEach(r=>L.push('- '+rowName(r)+': '+r.n+' л.'+(r.r>0&&r.n>1?' (повторных '+Math.min(r.r,r.n-1)+')':'')));
     L.push('Проект: '+({pdf:'PDF',dwg:'DWG/DXF',scan:'скан или фото'})[state.format]);
@@ -727,9 +795,10 @@ function buildMessage(c){
   if(v.length){L.push('Подсчёт объёмов:');v.forEach(x=>L.push('- '+x[1]+': '+state.vol[x[0]]+' '+x[2]))}
   const o=OTHER.filter(x=>+state.other[x[0]]>0);
   if(o.length){L.push('Дополнительно:');o.forEach(x=>L.push('- '+x[1]+': '+state.other[x[0]]))}
+  if(sup)L.push('Сопровождение: '+SUP[state.sup].name+' (до '+SUP[state.sup].sheets+' листов в месяц), '+state.supMonths+' мес.');
   L.push('Срок: '+({1:'обычный',1.5:'срочно, 48 часов',2:'срочно, 24 часа'})[state.urgency]);
   if(state.regular)L.push('Заказываю не первый раз');
-  L.push('Предварительно по калькулятору: '+fmt(c.total)+' тг');
+  L.push('Предварительно по калькулятору: '+fmt(total)+' тг');
   return L.join('\n');
 }
 function line(label,sub,val,cls){return `<div class="ln ${cls||''}"><span>${label}${sub?`<small>${sub}</small>`:''}</span><span class="num">${val}</span></div>`}
@@ -754,12 +823,14 @@ function recalc(){
   if(c.oth>0)out.push(line('Обработка, чертежи, акты',state.regular?'со скидкой 5%':'',fmt(c.oth)+' ₸'));
   if(c.urgSum>0)out.push(line('Срочность','×'+c.urg,'+'+fmt(c.urgSum)+' ₸'));
   if(c.minApplied)out.push(line('Минимальный заказ','сумма поднята до минимума',fmt(P.minOrder)+' ₸'));
+  const sp=state.mode==='c'&&SUP[state.sup]?SUP[state.sup]:null,sup=sp?sp.price*state.supMonths:0,total=c.total+sup;
+  if(sup)out.push(line('Сопровождение: '+sp.name,state.supMonths+' мес. × '+fmt(sp.price)+' ₸',fmt(sup)+' ₸'));
   if(!out.length)out.push(line('Заказ пока пуст','укажите листы или объёмы','0 ₸'));
   $('lines').innerHTML=out.join('');
-  $('total').textContent=fmt(c.total)+' ₸';
+  $('total').textContent=fmt(total)+' ₸';
   $('exNote').hidden=state.touched;
-  const msg=c.total?buildMessage(c):'Здравствуйте! Хочу заказать камеральную обработку.';
-  $('sendWa').href=waLink(msg);$('barWa').href=waLink(msg);$('barTotal').textContent=fmt(c.total)+' ₸';
+  const msg=total?buildMessage(c,total,sup):hello();
+  $('sendWa').href=waLink(msg);$('barWa').href=waLink(msg);$('barTotal').textContent=fmt(total)+' ₸';
   if(CONFIG.telegram)$('sendTg').href='https://t.me/'+CONFIG.telegram.replace(/^@/,'')+'?text='+encodeURIComponent(msg);
   $('copyBox').value=msg;
 }
@@ -781,7 +852,7 @@ function wire(){
   document.addEventListener('click',e=>{
     const b=e.target.closest('.sb');if(!b)return;
     const inp=b.parentNode.querySelector('input'),st=+inp.step||1;
-    const v=Math.max(0,Math.round(((+inp.value||0)+(+b.dataset.d)*st)*100)/100);
+    const v=Math.max(+inp.min||0,Math.round(((+inp.value||0)+(+b.dataset.d)*st)*100)/100);
     inp.value=(v||inp.dataset.f)?v:'';
     inp.dispatchEvent(new Event('input',{bubbles:true}));
     inp.dispatchEvent(new Event('change',{bubbles:true}));
@@ -816,10 +887,13 @@ function wire(){
   });
   if(window.self!==window.top){$('tplBtn').hidden=true;$('reMsg').textContent='Есть реестр в Excel? Загрузите его: калькулятор заполнится сам.'}
   $('form').addEventListener('submit',e=>e.preventDefault());
+  $('modeP').addEventListener('click',()=>setMode('p'));$('modeC').addEventListener('click',()=>setMode('c'));
   $('form').addEventListener('input',e=>{
     const t=e.target;
     if(t.name==='fmt')state.format=t.value;
     else if(t.name==='urg')state.urgency=+t.value;
+    else if(t.name==='sup')state.sup=t.value;
+    else if(t.id==='supMonths')state.supMonths=Math.max(1,Math.floor(+t.value||1));
     else if(t.id==='dev'||t.id==='kit'||t.id==='regular')state[t.id]=t.checked;
     else if(t.id.startsWith('v-'))state.vol[t.id.slice(2)]=Math.max(0,+t.value||0);
     else if(t.id.startsWith('o-'))state.other[t.id.slice(2)]=Math.max(0,+t.value||0);
@@ -833,8 +907,7 @@ function wire(){
   });
 }
 function applyConfig(){
-  const hello='Здравствуйте! Хочу заказать камеральную обработку.';
-  document.querySelectorAll('.js-wa').forEach(a=>a.href=waLink(hello));
+  document.querySelectorAll('.js-wa').forEach(a=>a.href=waLink(hello()));
   document.querySelectorAll('.js-wa-ad').forEach(a=>a.href=waLink('Здравствуйте! Хочу разместить рекламу на вашем сайте.'));
   if(CONFIG.telegram){
     const nick=CONFIG.telegram.replace(/^@/,'');
@@ -846,7 +919,17 @@ function applyConfig(){
   if(CONFIG.telegram){$('stTg').textContent='Telegram: @'+CONFIG.telegram.replace(/^@/,'');$('stTg').hidden=false}
   $('draft').hidden=!!CONFIG.whatsapp;
 }
+function setMode(m){
+  state.mode=m==='c'?'c':'p';
+  document.body.classList.toggle('m-company',state.mode==='c');
+  $('modeP').setAttribute('aria-pressed',String(state.mode==='p'));$('modeC').setAttribute('aria-pressed',String(state.mode==='c'));
+  try{localStorage.setItem('mode',state.mode)}catch(e){}
+  document.querySelectorAll('.js-wa').forEach(a=>a.href=waLink(hello()));
+  recalc();
+}
 function syncForm(){
+  const sr=$('sup-'+(state.sup||'0'));if(sr)sr.checked=true;
+  $('supMonths').value=state.supMonths||1;
   const f=$('fmt-'+state.format);if(f)f.checked=true;
   const u=$('urg-'+String(state.urgency).replace('.',''));if(u)u.checked=true;
   ['dev','kit','regular'].forEach(k=>$(k).checked=!!state[k]);
@@ -856,7 +939,8 @@ function syncForm(){
 }
 function start(saved){
   if(saved&&Array.isArray(saved.rows)&&saved.rows.length)state=Object.assign(state,saved);
-  renderStatic();renderRows();syncForm();wire();applyConfig();recalc();
+  let m0=state.mode;try{m0=location.hash==='#kompaniya'?'c':(localStorage.getItem('mode')||m0)}catch(e){}
+  renderStatic();renderRows();syncForm();wire();applyConfig();setMode(m0);
 }
 start({});
 </script>
